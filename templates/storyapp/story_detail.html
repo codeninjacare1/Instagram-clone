@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container">
-    <div class="story-container">
+    <div class="story-container"> 
         <h2>Story by {{ story.user.username }}</h2>
         <img src="{{ story.content.url }}" class="img-fluid" alt="Story Image">
         <p>Uploaded: {{ story.uploaded_at|date:"M d, Y P" }}</p>
