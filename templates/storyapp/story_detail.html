@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="story-container">
+        <h2>Story by {{ story.user.username }}</h2>
+        <img src="{{ story.content.url }}" class="img-fluid" alt="Story Image">
+        <p>Uploaded: {{ story.uploaded_at|date:"M d, Y P" }}</p>
+        <p>Expires: {{ story.expires_at|date:"M d, Y P" }}</p>
+        
+        {% if story.user == request.user %}
+        <div class="viewed-by-section mt-3">
+            <h4>Viewed By:</h4>
+            {% if viewed_by_users %}
+            <ul>
+                {% for viewer in viewed_by_users %}
+                <li>{{ viewer.username }}</li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>No one has viewed this story yet.</p>
+            {% endif %}
+        </div>
+        <form action="{% url 'storyapp:delete_story' story.pk %}" method="post" class="mt-3">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Delete Story</button>
+        </form>
+        {% endif %}
+
+        <a href="{% url 'profile' story.user.username %}" class="btn btn-secondary mt-3">Back to Profile</a>
+    </div>
+</div>
+{% endblock %} 

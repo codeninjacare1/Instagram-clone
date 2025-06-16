@@ -1,0 +1,56 @@
+# services:
+#   - type: web
+#     name: django-instagram
+#     env: python
+
+#     buildCommand: |
+#       pip install -r requirements.txt
+#       python manage.py collectstatic --noinput
+
+#     startCommand: gunicorn Django_Instagram.wsgi:application
+
+#     envVars:
+#       - key: DATABASE_URL
+#         value: postgresql://testdb_zdjd_user:SQcO5NJ21BeqkUgfZsd2wyZDKBjnRTCE@dpg-d157nl3uibrs73blt4ig-a.oregon-postgres.render.com/testdb_zdjd
+
+
+
+# buildCommand: |
+#   pip install -r requirements.txt
+#   python manage.py collectstatic --noinput
+#   mkdir -p media  # make sure media folder exists
+
+# envVars:
+#       - key: DATABASE_URL
+#         value: your_actual_postgres_url
+
+
+# disks:
+#       - name: media
+#         mountPath: /media
+
+
+services:
+  - type: web
+    name: django-instagram
+    env: python
+
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py collectstatic --noinput
+
+    startCommand: gunicorn Django_Instagram.wsgi:application
+
+    envVars:
+      - key: DATABASE_URL
+        value: YOUR_DATABASE_URL
+      - key: RENDER
+        value: true
+
+    disks:
+      - name: media
+        mountPath: /media
+
+
+buildCommand: "./build.sh"
+startCommand: "gunicorn Django_Instagram.wsgi:application"
