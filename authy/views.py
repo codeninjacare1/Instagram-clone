@@ -14,6 +14,7 @@ from authy.models import Profile
 from .forms import EditProfileForm, UserRegisterForm
 from comment.models import Comment
 from storyapp.models import Story
+from notification.models import Notification
 
 
 @login_required
@@ -151,3 +152,32 @@ def sign_in(request):
         return redirect('index')
         
     return render(request, 'sign-in.html')
+
+
+@login_required
+def block_user(request, user_id):
+    user_to_block = get_object_or_404(Profile, id=user_id)
+    user_profile = get_object_or_404(Profile, user=request.user)
+    
+    user_profile.blocked_users.add(user_to_block)
+    
+    Notification.objects.create(
+        sender=user_profile.user,
+        user=user_to_block.user,
+        notification_types=4,
+        text_preview=f"{user_profile.user.username} has blocked you"
+    )
+    
+    messages.success(request, f"{user_to_block.user.username} has been blocked.")
+    return redirect('profile', username=user_to_block.user.username)
+
+
+@login_required
+def unblock_user(request, user_id):
+    user_to_unblock = get_object_or_404(Profile, id=user_id)
+    user_profile = get_object_or_404(Profile, user=request.user)
+    
+    user_profile.blocked_users.remove(user_to_unblock)
+    
+    messages.success(request, f"{user_to_unblock.user.username} has been unblocked.")
+    return redirect('profile', username=user_to_unblock.user.username)

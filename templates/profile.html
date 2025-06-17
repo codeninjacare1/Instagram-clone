@@ -101,6 +101,11 @@
 
                         {% if request.user.is_authenticated and request.user != profile.user %}
                                 <a href="{% url 'conversation' profile.user  %}" class="btn profile-edit-btn">Message</a> <br><br>
+                                {% if profile in request.user.profile.blocked_users.all %}
+                                    <a href="{% url 'unblock_user' profile.id %}" class="btn profile-edit-btn" style="color: red;">Unblock</a> <br><br>
+                                {% else %}
+                                    <a href="{% url 'block_user' profile.id %}" class="btn profile-edit-btn" style="color: red;">Block</a> <br><br>
+                                {% endif %}
                         {% endif %}
                         <br>
 

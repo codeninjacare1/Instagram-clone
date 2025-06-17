@@ -61,17 +61,19 @@ img { max-width: 100%; }
 /* -------------------------------------------------- */
 
 /* Header Navbar */
+header.header {
+    z-index: 9 !important;
+}
 .header {
     width: 100%;
     height: var(--header-height);
     background-color: var(--primary);
-
     display: flex;
     justify-content: center;
-
     position: fixed;
-    top: 0; left: 0;
-    z-index: 2;
+    top: 0; 
+    left: 0;
+    z-index: 9 !important;
 }
 .header::after {
     content: '';
@@ -169,7 +171,7 @@ img { max-width: 100%; }
     display: flex;
     position: fixed;
     bottom: 0; left: 0;
-    z-index: 2;
+    z-index: 9;
 }
 .navbar::after {
     content: '';

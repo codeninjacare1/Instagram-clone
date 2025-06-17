@@ -19,6 +19,7 @@ class Profile(models.Model):
     location = models.CharField(max_length=200, null=True, blank=True)
     url = models.URLField(max_length=200, null=True, blank=True)
     favourite = models.ManyToManyField(Post, blank=True)
+    blocked_users = models.ManyToManyField('self', symmetrical=False, related_name='blocked_by')
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
