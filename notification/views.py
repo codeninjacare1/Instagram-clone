@@ -1,4 +1,5 @@
-import imp
+# import imp
+import importlib.util
 from django.shortcuts import render, redirect
 from notification.models import Notification
 from django.db.models.signals import post_save, post_delete
@@ -49,3 +50,5 @@ def notification_count(request):
         count = Notification.objects.filter(user=request.user, is_seen=False).count()
         return {'notification_count': count}
     return {'notification_count': 0}
+
+
