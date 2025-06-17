@@ -196,11 +196,12 @@
                         </div>
                     </article>
                     {% endfor %}
+                    {% comment %} <div class="suggestions-user">
                     <div class="side-menu__suggestions-content" style="padding: 0 40px;">
                          <div class="side-menu__suggestions-header">
                         <h2>Suggestions for You</h2>
                         <button>See All</button>
-                    </div>
+                    </div> 
                         {% for user in all_users %}
                         {% if request.user.username != user.username %}
                         <div class="side-menu__suggestion">
@@ -229,7 +230,7 @@
                         {% endfor %}
                         
                     </div>
-                </div>
+                </div> {% endcomment %}
             </div>
 
             <section class="side-menu">

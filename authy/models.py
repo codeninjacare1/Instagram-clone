@@ -20,9 +20,16 @@ class Profile(models.Model):
     url = models.URLField(max_length=200, null=True, blank=True)
     favourite = models.ManyToManyField(Post, blank=True)
     blocked_users = models.ManyToManyField('self', symmetrical=False, related_name='blocked_by')
+    last_active = models.DateTimeField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
+
+    @property
+    def is_online(self):
+        if self.last_active:
+            return (timezone.now() - self.last_active).total_seconds() < 300  # 5 minutes
+        return False
 
     def __str__(self):
         return f'{self.user.username} - Profile'

@@ -42,23 +42,15 @@ def index(request):
         if other_user != user:
             other_user.is_followed = Follow.objects.filter(following=other_user, follower=user).exists()
 
-    # Get stories from followed users and current user's active stories
-    followed_users = Follow.objects.filter(follower=request.user).values_list('following', flat=True)
-    
     # Get current user's active stories
     my_active_stories = Story.objects.filter(user=user, expires_at__gt=timezone.now()).order_by('-uploaded_at')
 
-    # Combine followed users' stories and current user's active stories
-    stories = Story.objects.filter(Q(user__in=followed_users) | Q(user=user), expires_at__gt=timezone.now()).order_by('-uploaded_at')
-
-    # Filter out duplicate stories if the current user is also in followed_users
-    # This ensures the current user's stories appear first if preferred, or just once
-    # For simplicity, we'll keep the current user's stories separate for the special 'add story' display.
-    # The 'stories' queryset below will still contain all relevant stories for the general display.
+    # Get all active stories
+    stories = Story.objects.filter(expires_at__gt=timezone.now()).order_by('-uploaded_at')
     
     # Get posts from followed users
     followed_users = Follow.objects.filter(follower=request.user).values_list('following', flat=True)
-    posts = Post.objects.filter(user__in=followed_users).order_by('-posted')
+    posts = Post.objects.filter(Q(user__in=followed_users) | Q(user=request.user)).order_by('-posted')
     
     # Add liked status to each post
     for post in posts:

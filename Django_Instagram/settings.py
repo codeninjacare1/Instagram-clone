@@ -18,7 +18,7 @@ SECRET_KEY = 'django-insecure-e_ybrd)6lj3s(up17hy%yc=@5u_dou-@c%1y(v*yic+f-zm86#
 DEBUG = config('DEBUG', default=True, cast=bool)
 
 # ALLOWED_HOSTS = ['*']  # or your Render domain
-ALLOWED_HOSTS = ['insta-8dau.onrender.com', 'localhost', '127.0.0.1', '*']
+ALLOWED_HOSTS = ['instagram-clone-ooar.onrender.com', 'localhost', '127.0.0.1', '*']
 # ALLOWED_HOSTS = [
 #     'localhost',
 #     '127.0.0.1',
