@@ -109,7 +109,7 @@ def register(request):
         if form.is_valid():
             new_user = form.save()
             username = form.cleaned_data.get('username')
-            messages.success(request, 'Hurray, your account was created!')
+            messages.success(request, 'rahul, your account was created!')
 
             # Automatically log in the user
             new_user = authenticate(

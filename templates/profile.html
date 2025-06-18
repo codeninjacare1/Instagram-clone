@@ -21,18 +21,40 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
     <style>
-        .online-status {
+        {% comment %} .online-status {
             display: inline-block;
             width: 10px;
             height: 10px;
             border-radius: 50%;
             margin-left: 5px;
             background-color: #ccc;
-        }
+        } {% endcomment %}
         .online-status.online {
             background-color: #2ecc71;
+            border-radius: 50%;
+            position: absolute;
+            right: 8px;
+            bottom: 30px;
+            width: 15px;
+            height: 15px;
         }
-
+        .profile-image {
+            position: relative;
+            display: inline-block;
+        }
+        .story-ring {
+            padding: 4px;
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .profile-image img {
+            border-radius: 50%;
+            width: 150px;
+            height: 150px;
+            border: 3px solid #fff;
+            background: #fff;
+        }
     </style>
 
 </head>
@@ -44,37 +66,31 @@
 
             <div class="profile">
 
-                <div class="profile-image">
-
-                    <img src="{{profile.image.url}}" alt="" style="width: 200px; height: 200px;">
-
-                </div>
-
-                <!-- Stories Section -->
-                <div class="stories-section" style="margin-left: 20px;">
-                    {% comment %} <h4>Stories</h4> {% endcomment %}
-                    <div class="d-flex">
-                        {% comment %} {% if request.user == profile.user %}
-                        <div class="story-add me-2" style="margin-right: 10px;">
-                            <a href="{% url 'storyapp:add_story' %}" class="btn btn-primary btn-sm">+ Add Story</a>
-                        </div>
-                        {% endif %} {% endcomment %}
-                        {% for story in active_stories %}
-                        <div class="story-thumbnail" style="margin-right: 10px;">
-                            <a href="{% url 'storyapp:story_detail' story.pk %}">
-                                <img src="{{ story.content.url }}" alt="Story" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid #fd5c63;">
-                            </a>
-                        </div>
-                        {% empty %}
-                            {% if request.user == profile.user %}
-                                <p>You have no active stories. Add one!</p>
+                <div class="profile-top">
+                    <div class="profile-top-left">
+                        <div class="profile-image">
+                            {% if active_stories %}
+                                <a href="{% url 'storyapp:story_detail' active_stories.0.pk %}">
+                                    <span class="story-ring">
+                                        <img src="{{ active_stories.0.content.url }}" alt="Story Image">
+                                    </span>
+                                    {% if active_stories.0.user.profile.is_online %}
+                                        <span class="online-status online" title="Online"></span>
+                                    {% else %}
+                                        <span class="online-status" style="background:#ccc;" title="Offline"></span>
+                                    {% endif %}
+                                </a>
                             {% else %}
-                                <p>{{ profile.user.username }} has no active stories.</p>
+                                <img src="{{profile.image.url}}" alt="Profile Image">
+                                {% if profile.is_online %}
+                                    <div class="online-status online" title="Online"></div>
+                                {% else %}
+                                    <div class="online-status" title="Offline"></div>
+                                {% endif %}
                             {% endif %}
-                        {% endfor %}
+                        </div>
                     </div>
                 </div>
-                <!-- End Stories Section -->
 
                 <div class="profile-user-settings">
                         {% if profile.first_name %}

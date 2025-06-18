@@ -25,6 +25,11 @@
                                     </div>
                                     <div class="story__picture">
                                         <img src="{{ my_active_stories.0.content.url }}" style="width: 80px; height: 80px; object-fit: cover;">
+                                        {% if my_active_stories.0.user.profile.is_online %}
+                                            <span class="online-status online" title="Online"></span>
+                                        {% else %}
+                                            <span class="online-status" title="Offline"></span>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 <span class="story__user">Your Story</span>
@@ -63,6 +68,11 @@
                                     </div>
                                     <div class="story__picture">
                                         <img src="{{ story.content.url }}" style="width: 80px; height: 80px; object-fit: cover;">
+                                        {% if story.user.profile.is_online %}
+                                            <span class="online-status online" title="Online"></span>
+                                        {% else %}
+                                            <span class="online-status" title="Offline"></span>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 <span class="story__user">@{{ story.user.username }}</span>
@@ -85,7 +95,14 @@
                             <div class="post__profile">
                                 {% if post.user.profile.image %}
                                 <a href="{{post.user.profile.image.url}}" class="post__avatar">
-                                    <img src="{{post.user.profile.image.url}}" alt="User Picture">
+                                    <div style="position: relative; display: inline-block;">
+                                        <img src="{{post.user.profile.image.url}}" class="rounded-circle mr-1" alt="img" width="40" height="40">
+                                        {% if post.user.profile.is_online %}
+                                            <span class="online-status online" title="Online"></span>
+                                        {% else %}
+                                            <span class="online-status" title="Offline"></span>
+                                        {% endif %}
+                                    </div>
                                 </a>
                                 {% endif %}
                                 <a href="{{post.user.username}}" class="post__user">{{ post.user.username }}</a>
@@ -152,6 +169,11 @@
                                                     <div class="share-user-item">
                                                         <a href="{% url 'share-post' post.id user.id %}" class="d-flex align-items-center text-decoration-none text-dark">
                                                             <img src="{{user.profile.image.url}}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                                            {% if user.profile.is_online %}
+                                                                <div class="online-status online" title="Online"></div>
+                                                            {% else %}
+                                                                <div class="online-status" title="Offline"></div>
+                                                            {% endif %}
                                                             <div>
                                                                 <h6 class="mb-0">{{user.username}}</h6>
                                                                 <small class="text-muted">{{user.profile.first_name}} {{user.profile.last_name}}</small>
@@ -237,6 +259,11 @@
                 <div class="side-menu__user-profile">
                     <a href="{% url 'profile' request.user %}" target="_blank" class="side-menu__user-avatar">
                         <img src="{{ request.user.profile.image.url }}" alt="User Picture">
+                        {% if request.user.profile.is_online %}
+                            <span class="online-status online" title="Online"></span>
+                        {% else %}
+                            <span class="online-status" title="Offline"></span>
+                        {% endif %}
                     </a>
                     <div class="side-menu__user-info">
                         {% if user.profile.first_name %}
@@ -259,6 +286,11 @@
                             <div class="side-menu__suggestion">
                                 <a href="{% url 'profile' user %}" class="side-menu__suggestion-avatar">
                                     <img src="{{user.profile.image.url}}" alt="User Picture">
+                                    {% if user.profile.is_online %}
+                                        <span class="online-status online" title="Online"></span>
+                                    {% else %}
+                                        <span class="online-status" title="Offline"></span>
+                                    {% endif %}
                                 </a>
                                 
                                 <div class="side-menu__suggestion-info">
@@ -336,3 +368,20 @@ function getCookie(name) {
     return cookieValue;
 }
 </script>
+
+<style>
+.online-status {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    border: 2px solid #fff;
+    position: absolute;
+    right: 2px;
+    bottom: 2px;
+}
+.online-status.online {
+    background: #2ecc71;
+}
+</style>
