@@ -37,35 +37,25 @@ def index(request):
     user = request.user
     all_users = User.objects.all()
     
-    # Add follow status to each user
     for other_user in all_users:
         if other_user != user:
             other_user.is_followed = Follow.objects.filter(following=other_user, follower=user).exists()
 
-    # Get current user's active stories
     my_active_stories = Story.objects.filter(user=user, expires_at__gt=timezone.now()).order_by('-uploaded_at')
-
-    # Get all active stories
     stories = Story.objects.filter(expires_at__gt=timezone.now()).order_by('-uploaded_at')
     
-    # Get posts from followed users
     followed_users = Follow.objects.filter(follower=request.user).values_list('following', flat=True)
     posts = Post.objects.filter(Q(user__in=followed_users) | Q(user=request.user)).order_by('-posted')
     
-    # Add liked status to each post
     for post in posts:
         post.liked = Likes.objects.filter(user=user, post=post).exists()
 
-    # Get users to share posts with
     share_users = User.objects.exclude(id=request.user.id)
-
-    # Get unread messages count
     unread_messages = Message.objects.filter(user=request.user, is_read=False).count()
-
-    # Get notification count
     notification_count = Notification.objects.filter(user=request.user, is_seen=False).count()
 
-    template = loader.get_template('index.html')
+    # Add this line
+    favourite_ids = request.user.profile.favourite.values_list('id', flat=True)
 
     context = {
         'post_items': posts,
@@ -75,8 +65,10 @@ def index(request):
         'notification_count': notification_count,
         'stories': stories,
         'my_active_stories': my_active_stories,
+        'favourite_ids': list(favourite_ids),  # ✅ Added here
     }
 
+    template = loader.get_template('index.html')
     return HttpResponse(template.render(context, request))
 
 
@@ -246,3 +238,17 @@ def delete_post(request, post_id):
     post.delete()
     messages.success(request, 'Post deleted successfully.')
     return redirect('index')
+
+@login_required
+def toggle_favourite(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    profile = request.user.profile
+
+    if post in profile.favourite.all():
+        profile.favourite.remove(post)
+        is_fav = False
+    else:
+        profile.favourite.add(post)
+        is_fav = True
+
+    return JsonResponse({'favourite': is_fav})
