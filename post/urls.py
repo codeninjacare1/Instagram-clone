@@ -13,6 +13,5 @@ urlpatterns = [
     # path('add_post/', views.add_post, name='add_post'),
     path('add_story/', views.add_story, name='add_story'),
     path('share-post/<uuid:post_id>/<int:user_id>/', views.share_post, name='share-post'),
-    path('toggle-favourite/<int:post_id>/', views.toggle_favourite, name='toggle-favourite'),
-
+    path('save-post/<uuid:post_id>/', views.save_post, name='save-post'),
 ]

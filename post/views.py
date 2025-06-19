@@ -11,7 +11,7 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView
 from django.urls import reverse_lazy
-from .models import Post, Follow, Stream, Tag, Likes
+from .models import Post, Follow, Stream, Tag, Likes, SavedPost
 from storyapp.models import Story
 from .forms import NewPostform
 from directs.models import Message
@@ -37,25 +37,35 @@ def index(request):
     user = request.user
     all_users = User.objects.all()
     
+    # Add follow status to each user
     for other_user in all_users:
         if other_user != user:
             other_user.is_followed = Follow.objects.filter(following=other_user, follower=user).exists()
 
+    # Get current user's active stories
     my_active_stories = Story.objects.filter(user=user, expires_at__gt=timezone.now()).order_by('-uploaded_at')
+
+    # Get all active stories
     stories = Story.objects.filter(expires_at__gt=timezone.now()).order_by('-uploaded_at')
     
+    # Get posts from followed users
     followed_users = Follow.objects.filter(follower=request.user).values_list('following', flat=True)
     posts = Post.objects.filter(Q(user__in=followed_users) | Q(user=request.user)).order_by('-posted')
     
+    # Add liked status to each post
     for post in posts:
         post.liked = Likes.objects.filter(user=user, post=post).exists()
 
+    # Get users to share posts with
     share_users = User.objects.exclude(id=request.user.id)
+
+    # Get unread messages count
     unread_messages = Message.objects.filter(user=request.user, is_read=False).count()
+
+    # Get notification count
     notification_count = Notification.objects.filter(user=request.user, is_seen=False).count()
 
-    # Add this line
-    favourite_ids = request.user.profile.favourite.values_list('id', flat=True)
+    template = loader.get_template('index.html')
 
     context = {
         'post_items': posts,
@@ -65,10 +75,8 @@ def index(request):
         'notification_count': notification_count,
         'stories': stories,
         'my_active_stories': my_active_stories,
-        'favourite_ids': list(favourite_ids),  # ✅ Added here
     }
 
-    template = loader.get_template('index.html')
     return HttpResponse(template.render(context, request))
 
 
@@ -108,6 +116,9 @@ def PostDetail(request, post_id):
     
     # Add liked status to the post
     post.liked = Likes.objects.filter(user=user, post=post).exists()
+
+    # Add saved status to the post
+    post.saved = SavedPost.objects.filter(user=user, post=post).exists()
 
     # Get users to share posts with
     share_users = User.objects.exclude(id=request.user.id)
@@ -240,15 +251,25 @@ def delete_post(request, post_id):
     return redirect('index')
 
 @login_required
-def toggle_favourite(request, post_id):
+def save_post(request, post_id):
+    user = request.user
     post = get_object_or_404(Post, id=post_id)
-    profile = request.user.profile
-
-    if post in profile.favourite.all():
-        profile.favourite.remove(post)
-        is_fav = False
+    
+    # Check if post is already saved
+    saved_post = SavedPost.objects.filter(user=user, post=post).first()
+    
+    if saved_post:
+        # If already saved, unsave it
+        saved_post.delete()
+        saved = False
     else:
-        profile.favourite.add(post)
-        is_fav = True
-
-    return JsonResponse({'favourite': is_fav})
+        # If not saved, save it
+        SavedPost.objects.create(user=user, post=post)
+        saved = True
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # If AJAX request, return JSON response
+        return JsonResponse({'saved': saved})
+    else:
+        # If regular request, redirect back
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', reverse('index')))

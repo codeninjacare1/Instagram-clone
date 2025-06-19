@@ -127,3 +127,15 @@ class Story(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='post_stories')
     image = models.ImageField(upload_to='stories/')
     created_at = models.DateTimeField(auto_now_add=True)
+
+class SavedPost(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="saved_posts")
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'post')
+        ordering = ['-saved_at']
+
+    def __str__(self):
+        return f"{self.user.username} saved {self.post.caption}"
