@@ -216,9 +216,7 @@
                                                             <div class="d-flex flex-row user-info">
                                                                 <img class="rounded-circle me-2" src="{{comment.user.profile.image.url}}" width="32" height="32" alt="User Picture">
                                                                 <div class="flex-grow-1">
-                                                                    <a href="{% url 'profile' comment.user %}" class="text-decoration-none">
-                                                                        <span class="fw-bold text-dark">{{comment.user.profile.first_name}} {{comment.user.profile.last_name}}</span>
-                                                                    </a>
+                                                                    <span class="fw-bold text-dark">@{{ comment.user.username }}</span>
                                                                     <p class="mb-0 text-dark">{{ comment.body }}</p>
                                                                     <small class="text-muted">{{comment.date|timesince}} ago</small>
                                                                 </div>

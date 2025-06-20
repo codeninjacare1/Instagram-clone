@@ -41,11 +41,14 @@ def index(request):
         if other_user != user:
             other_user.is_followed = Follow.objects.filter(following=other_user, follower=user).exists()
 
+    blocked_profiles = user.profile.blocked_users.all()
+    blocked_user_ids = [profile.user.id for profile in blocked_profiles]
+
     my_active_stories = Story.objects.filter(user=user, expires_at__gt=timezone.now()).order_by('-uploaded_at')
-    stories = Story.objects.filter(expires_at__gt=timezone.now()).order_by('-uploaded_at')
+    stories = Story.objects.filter(expires_at__gt=timezone.now()).exclude(user__id__in=blocked_user_ids).order_by('-uploaded_at')
     
-    # Show all posts from all users
-    posts = Post.objects.all().order_by('-posted')
+    # Show all posts from all users except blocked
+    posts = Post.objects.exclude(user__id__in=blocked_user_ids).order_by('-posted')
     
     for post in posts:
         post.liked = Likes.objects.filter(user=user, post=post).exists()

@@ -319,35 +319,28 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const saveButtons = document.querySelectorAll('.post__button--align-right');
-    saveButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
+    document.querySelectorAll('.post__button--align-right').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
             e.preventDefault();
-            const postId = this.dataset.postId;
-            fetch(`/save-post/${postId}/`, {
+            var postId = this.getAttribute('data-post-id');
+            var url = '/toggle-favourite/' + postId + '/';
+            var icon = this.querySelector('svg');
+            fetch(url, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
                 },
             })
-            .then(response => {
-                if (!response.ok) {
-                    console.error('Network response was not ok', response.status, response.statusText);
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                console.log('Bookmark response:', data);
-                if (data.saved) {
-                    this.querySelector('svg path').setAttribute('fill', '#1a73e8');
-                    this.querySelector('svg path').setAttribute('stroke', '#1a73e8');
+                if(data.favourite) {
+                    icon.innerHTML = `<path d="M19.875 2H4.125C3.50625 2 3 2.44939 3 3.00481V22.4648C3 23.0202 3.36563 23.1616 3.82125 22.7728L11.5444 16.1986C11.7244 16.0471 12.0225 16.0471 12.2025 16.1936L20.1731 22.7879C20.6287 23.1666 21 23.0202 21 22.4648V3.00481C21 2.44939 20.4994 2 19.875 2Z"/>`;
+                    showPopup('Post saved!');
                 } else {
-                    this.querySelector('svg path').setAttribute('fill', 'var(--text-dark)');
-                    this.querySelector('svg path').setAttribute('stroke', 'var(--text-dark)');
+                    icon.innerHTML = `<path d="M19.875 2H4.125C3.50625 2 3 2.44939 3 3.00481V22.4648C3 23.0202 3.36563 23.1616 3.82125 22.7728L11.5444 16.1986C11.7244 16.0471 12.0225 16.0471 12.2025 16.1936L20.1731 22.7879C20.6287 23.1666 21 23.0202 21 22.4648V3.00481C21 2.44939 20.4994 2 19.875 2ZM19.3125 20.0209L13.3444 15.0827C12.9281 14.7394 12.405 14.5677 11.8763 14.5677C11.3363 14.5677 10.8019 14.7444 10.3856 15.0979L4.6875 19.9502V3.51479H19.3125V20.0209Z"/>`;
+                    showPopup('Post unsaved!');
                 }
-            })
-            .catch(error => console.error('Fetch error:', error));
         });
     });
 });
@@ -366,7 +359,42 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+
+    function showPopup(message) {
+        let popup = document.createElement('div');
+        popup.className = 'popup-message';
+        popup.innerText = message;
+        document.body.appendChild(popup);
+        setTimeout(() => {
+            popup.classList.add('show');
+        }, 10);
+        setTimeout(() => {
+            popup.classList.remove('show');
+            setTimeout(() => popup.remove(), 300);
+        }, 1500);
+    }
+});
 </script>
+<style>
+.popup-message {
+    position: fixed;
+    top: 80px;
+    right: 30px;
+    background: #222;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    opacity: 0;
+    z-index: 9999;
+    transition: opacity 0.3s, transform 0.3s;
+    transform: translateY(-20px);
+}
+.popup-message.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+</style>
 {% endblock %}
 
 {% block extra_css %}
