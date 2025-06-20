@@ -220,6 +220,33 @@
                             </p>
                             <span class="post__date-time">{{ post.posted }}</span>
                         </div>
+
+                        <!-- Show latest 3 comments -->
+                        <div class="post__comments">
+                            {% if latest_comments and latest_comments|get_item:post.id %}
+                                {% for comment in latest_comments|get_item:post.id %}
+                                    <div class="post__comment">
+                                        <b>{{ comment.user.username }}</b> {{ comment.body|linebreaksbr }}
+                                        <span style="font-size:11px;color:#888;">{{ comment.date|timesince }} ago</span>
+                                    </div>
+                                {% endfor %}
+                                {% if comment_counts and comment_counts|get_item:post.id and comment_counts|get_item:post.id > 3 %}
+                                    <a href="{% url 'post-details' post.id %}" style="font-size:13px;">View all comments</a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <!-- Comment form -->
+                        <div class="post__add-comment">
+                            <form method="post" action="{% url 'add-comment' post.id %}" style="display: flex; align-items: center; gap: 10px;">
+                                {% csrf_token %}
+                                {% if comment_forms and comment_forms|get_item:post.id %}
+                                    {{ comment_forms|get_item:post.id }}
+                                {% else %}
+                                    <input type="text" name="body" placeholder="Add a comment..." class="form-control" required style="width:80%;display:inline-block;">
+                                {% endif %}
+                                <button type="submit" class="btn btn-primary btn-sm">Comment</button>
+                            </form>
+                        </div>
                     </div>
                     
                 </article>
@@ -304,8 +331,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Content-Type': 'application/json',
                 },
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    console.error('Network response was not ok', response.status, response.statusText);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('Bookmark response:', data);
                 if (data.saved) {
                     this.querySelector('svg path').setAttribute('fill', '#1a73e8');
                     this.querySelector('svg path').setAttribute('stroke', '#1a73e8');
@@ -314,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     this.querySelector('svg path').setAttribute('stroke', 'var(--text-dark)');
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => console.error('Fetch error:', error));
         });
     });
 });
@@ -357,5 +390,12 @@ function getCookie(name) {
     max-width: 100% !important;
     width: 100% !important;
 }
+button.btn.btn-primary.btn-sm {
+    margin-top: 10px !important;
+}
+.post__add-comment textarea.form-control {
+    flex: 1;
+    margin-bottom: 0;
+}
 </style>
-{% endblock %} 
+{% endblock %}

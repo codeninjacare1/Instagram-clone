@@ -57,6 +57,28 @@ def index(request):
     # Add this line
     favourite_ids = request.user.profile.favourite.values_list('id', flat=True)
 
+    # --- New: handle comment POST from index page ---
+    if request.method == "POST" and 'comment_post_id' in request.POST:
+        post_id = request.POST.get('comment_post_id')
+        post_obj = Post.objects.get(id=post_id)
+        form = NewCommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post_obj
+            comment.user = user
+            comment.save()
+            return redirect('index')
+
+    # --- New: prepare comments and forms for each post ---
+    latest_comments = {}
+    comment_counts = {}
+    comment_forms = {}
+    for post in posts:
+        comments_qs = Comment.objects.filter(post=post).order_by('-date')
+        latest_comments[post.id] = list(comments_qs[:3])
+        comment_counts[post.id] = comments_qs.count()
+        comment_forms[post.id] = NewCommentForm()
+
     context = {
         'post_items': posts,
         'all_users': all_users,
@@ -66,6 +88,9 @@ def index(request):
         'stories': stories,
         'my_active_stories': my_active_stories,
         'favourite_ids': list(favourite_ids),  # ✅ Added here
+        'latest_comments': latest_comments,
+        'comment_counts': comment_counts,
+        'comment_forms': comment_forms,
     }
 
     template = loader.get_template('index.html')
@@ -272,3 +297,15 @@ def save_post(request, post_id):
         is_saved = True
 
     return JsonResponse({'saved': is_saved})
+
+@require_POST
+def add_comment(request, post_id):
+    user = request.user
+    post_obj = Post.objects.get(id=post_id)
+    form = NewCommentForm(request.POST)
+    if form.is_valid():
+        comment = form.save(commit=False)
+        comment.post = post_obj
+        comment.user = user
+        comment.save()
+    return redirect('index')  

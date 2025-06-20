@@ -17,6 +17,11 @@
 </head>
 
 <body>
+    {% if request.path != '/' %}
+    <button onclick="window.history.back()" style="position:fixed;top:16px;left:16px;z-index:9999;padding:8px 16px;border-radius:5px;border:1px solid #ccc;background:#f5f5f5;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.07);">
+      &larr; Back
+    </button>
+    {% endif %}
     <header class="header">
         <nav class="header__content">
             <div class="header__buttons">

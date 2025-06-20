@@ -4,6 +4,7 @@ from django import forms
 
 class NewCommentForm(forms.ModelForm):
     body = forms.CharField(
+        label='',
         widget=forms.Textarea(attrs={
             'class': 'form-control',
             'placeholder': 'Write a comment...',
