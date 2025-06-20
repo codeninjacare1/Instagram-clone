@@ -40,6 +40,12 @@ def Directs(request, username):
     directs = Message.objects.filter(user=user, reciepient__username=username)  
     directs.update(is_read=True)
 
+    # Blocked logic
+    to_user = User.objects.get(username=username)
+    user_profile = user.profile
+    to_user_profile = to_user.profile
+    blocked = (to_user_profile in user_profile.blocked_users.all()) or (user_profile in to_user_profile.blocked_users.all())
+
     for message in messages:
             if message['user'].username == username:
                 message['unread'] = 0
@@ -47,6 +53,7 @@ def Directs(request, username):
         'directs': directs,
         'messages': messages,
         'active_direct': active_direct,
+        'blocked': blocked,
     }
     return render(request, 'directs/direct.html', context)
 

@@ -44,8 +44,8 @@ def index(request):
     my_active_stories = Story.objects.filter(user=user, expires_at__gt=timezone.now()).order_by('-uploaded_at')
     stories = Story.objects.filter(expires_at__gt=timezone.now()).order_by('-uploaded_at')
     
-    followed_users = Follow.objects.filter(follower=request.user).values_list('following', flat=True)
-    posts = Post.objects.filter(Q(user__in=followed_users) | Q(user=request.user)).order_by('-posted')
+    # Show all posts from all users
+    posts = Post.objects.all().order_by('-posted')
     
     for post in posts:
         post.liked = Likes.objects.filter(user=user, post=post).exists()
@@ -117,7 +117,7 @@ def NewPost(request):
             p, created = Post.objects.get_or_create(picture=picture, caption=caption, user=user)
             p.tags.set(tags_obj)
             p.save()
-            return redirect('profile', request.user.username)
+            return redirect('index')
     else:
         form = NewPostform()
     context = {

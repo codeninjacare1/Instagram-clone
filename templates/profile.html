@@ -116,12 +116,14 @@
                         {% endif %}
 
                         {% if request.user.is_authenticated and request.user != profile.user %}
+                            {% if profile not in request.user.profile.blocked_users.all and request.user.profile not in profile.blocked_users.all %}
                                 <a href="{% url 'conversation' profile.user  %}" class="btn profile-edit-btn">Message</a> <br><br>
-                                {% if profile in request.user.profile.blocked_users.all %}
-                                    <a href="{% url 'unblock_user' profile.id %}" class="btn profile-edit-btn" style="color: red;">Unblock</a> <br><br>
-                                {% else %}
-                                    <a href="{% url 'block_user' profile.id %}" class="btn profile-edit-btn" style="color: red;">Block</a> <br><br>
-                                {% endif %}
+                            {% endif %}
+                            {% if profile in request.user.profile.blocked_users.all %}
+                                <a href="{% url 'unblock_user' profile.id %}" class="btn profile-edit-btn" style="color: red;">Unblock</a> <br><br>
+                            {% else %}
+                                <a href="{% url 'block_user' profile.id %}" class="btn profile-edit-btn" style="color: red;">Block</a> <br><br>
+                            {% endif %}
                         {% endif %}
                         <br>
 
