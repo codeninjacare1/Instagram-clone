@@ -20,8 +20,8 @@
                     progress.style.width = percent + '%';
                     if (elapsed >= duration) {
                         clearInterval(interval);
-                        // Redirect to profile page after 30s
-                        window.location.href = "{% url 'profile' story.user.username %}";
+                        // Redirect to index page after 30s
+                        window.location.href = "{% url 'index' %}";
                     }
                 }, 100);
             });
@@ -48,7 +48,7 @@
         </form>
         {% endif %}
 
-        <a href="{% url 'profile' story.user.username %}" class="btn btn-secondary mt-3">Back to Profile</a>
+        <a href="{% url 'index' %}" class="btn btn-secondary mt-3">Back to Home</a>
     </div>
 </div>
 {% endblock %} 

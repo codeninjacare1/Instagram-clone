@@ -13,6 +13,15 @@ def inbox(request):
     active_direct = None
     directs = None
     profile = get_object_or_404(Profile, user=user)
+    
+    # Get the list of users the current user is following
+    following_profiles = user.profile.following.all()
+    
+    # Get the list of users who follow the current user
+    follower_profiles = user.profile.followers.all()
+
+    # Combine both lists and remove duplicates
+    combined_users = list(set(list(following_profiles) + list(follower_profiles)))
 
     if messages:
         message = messages[0]
@@ -28,6 +37,7 @@ def inbox(request):
         'messages': messages,
         'active_direct': active_direct,
         'profile': profile,
+        'combined_users': combined_users,
     }
     return render(request, 'directs/direct.html', context)
 
