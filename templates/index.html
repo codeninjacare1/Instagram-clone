@@ -176,7 +176,13 @@
                                                             {% endif %}
                                                             <div>
                                                                 <h6 class="mb-0">{{ user.username }}</h6>
-                                                                <small class="text-muted">{{ user.profile.first_name }} {{ user.profile.last_name }}</small>
+                                                                <small class="text-muted">
+                                                                    {% if user.profile.first_name or user.profile.last_name %}
+                                                                        {{ user.profile.first_name }} {{ user.profile.last_name }}
+                                                                    {% else %}
+                                                                        @{{ user.username }}
+                                                                    {% endif %}
+                                                                </small>
                                                             </div>
                                                         </a>
                                                     </div>

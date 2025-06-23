@@ -79,6 +79,8 @@ def EditProfile(request):
 @login_required
 def follow(request, username, option):
     following = get_object_or_404(User, username=username)
+    follower_profile = request.user.profile
+    following_profile = following.profile
 
     try:
         f, created = Follow.objects.get_or_create(follower=request.user, following=following)
@@ -86,6 +88,8 @@ def follow(request, username, option):
         if int(option) == 0:
             f.delete()
             Stream.objects.filter(following=following, user=request.user).delete()
+            # Remove from Profile.following
+            follower_profile.following.remove(following_profile)
         else:
             posts = Post.objects.filter(user=following)[:25]
             with transaction.atomic():
@@ -96,12 +100,19 @@ def follow(request, username, option):
                         date=post.posted,
                         following=following
                     )
+            # Add to Profile.following
+            follower_profile.following.add(following_profile)
+
+        # Optionally, ensure reverse relation is also correct (not strictly needed):
+        # if int(option) == 0:
+        #     following_profile.followers.remove(follower_profile)
+        # else:
+        #     following_profile.followers.add(follower_profile)
 
         return HttpResponseRedirect(reverse('profile', args=[username]))
 
     except User.DoesNotExist:
         return HttpResponseRedirect(reverse('profile', args=[username]))
-
 
 def register(request):
     if request.method == "POST":

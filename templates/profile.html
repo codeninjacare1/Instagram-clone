@@ -93,8 +93,10 @@
                 </div>
 
                 <div class="profile-user-settings">
-                        {% if profile.first_name %}
+                        {% if profile.first_name or profile.last_name %}
                         <h6 class="profile-user-name">{{profile.first_name}} {{profile.last_name}}</h6> <br>
+                        {% else %}
+                        <h6 class="profile-user-name">@{{profile.user.username}}</h6> <br>
                         {% endif %}
                         <h5 style="font-size: 15px;" class="profile-user-name">@{{profile.user.username}}</h5>
 

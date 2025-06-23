@@ -21,7 +21,18 @@ def inbox(request):
     follower_profiles = user.profile.followers.all()
 
     # Combine both lists and remove duplicates
-    combined_users = list(set(list(following_profiles) + list(follower_profiles)))
+    combined_profiles = set(list(following_profiles) + list(follower_profiles))
+    # Remove self if present
+    combined_profiles.discard(user.profile)
+
+    # Users with whom there is already a message
+    messaged_users = set([msg['user'].profile for msg in messages]) if messages else set()
+
+    # Sidebar users: all followers/following, but message users at the top (no duplicates)
+    sidebar_users = list(messaged_users) + [p for p in combined_profiles if p not in messaged_users]
+
+    # --- DEBUG PRINT ---
+    print('Sidebar users:', [p.user.username for p in sidebar_users])
 
     if messages:
         message = messages[0]
@@ -37,7 +48,7 @@ def inbox(request):
         'messages': messages,
         'active_direct': active_direct,
         'profile': profile,
-        'combined_users': combined_users,
+        'sidebar_users': sidebar_users,
     }
     return render(request, 'directs/direct.html', context)
 
@@ -57,13 +68,24 @@ def Directs(request, username):
     blocked = (to_user_profile in user_profile.blocked_users.all()) or (user_profile in to_user_profile.blocked_users.all())
 
     for message in messages:
-            if message['user'].username == username:
-                message['unread'] = 0
+        if message['user'].username == username:
+            message['unread'] = 0
+
+    # --- Add sidebar_users logic here ---
+    following_profiles = user.profile.following.all()
+    follower_profiles = user.profile.followers.all()
+    combined_profiles = set(list(following_profiles) + list(follower_profiles))
+    combined_profiles.discard(user.profile)
+    messaged_users = set([msg['user'].profile for msg in messages]) if messages else set()
+    sidebar_users = list(messaged_users) + [p for p in combined_profiles if p not in messaged_users]
+    # --- End sidebar_users logic ---
+
     context = {
         'directs': directs,
         'messages': messages,
         'active_direct': active_direct,
         'blocked': blocked,
+        'sidebar_users': sidebar_users,
     }
     return render(request, 'directs/direct.html', context)
 

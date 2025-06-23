@@ -20,46 +20,56 @@ function setInitialTheme(themeKey) {
 }
 
 // Toggle theme button
-toggleThemeBtn.addEventListener('click', () => {
-    // Toggle root class
-    document.documentElement.classList.toggle('darkTheme');
+if (toggleThemeBtn) {
+    toggleThemeBtn.addEventListener('click', () => {
+        // Toggle root class
+        document.documentElement.classList.toggle('darkTheme');
 
-    // Saving current theme on LocalStorage
-    if(document.documentElement.classList.contains('darkTheme')) {
-        localStorage.setItem('theme', 'dark');
-    }
-    else {
-        localStorage.setItem('theme', 'light');
-    }
-});
+        // Saving current theme on LocalStorage
+        if(document.documentElement.classList.contains('darkTheme')) {
+            localStorage.setItem('theme', 'dark');
+        }
+        else {
+            localStorage.setItem('theme', 'light');
+        }
+    });
+}
 
 // ===================================
 // STORIES SCROLL BUTTONS
 // Scrolling stories content
-storiesLeftButton.addEventListener('click', () => {
-    storiesContent.scrollLeft -= 320;
-});
-storiesRightButton.addEventListener('click', () => {
-    storiesContent.scrollLeft += 320;
-});
+if (storiesLeftButton && storiesContent) {
+    storiesLeftButton.addEventListener('click', () => {
+        storiesContent.scrollLeft -= 320;
+    });
+}
+if (storiesRightButton && storiesContent) {
+    storiesRightButton.addEventListener('click', () => {
+        storiesContent.scrollLeft += 320;
+    });
+}
 
 // Checking if screen has minimun size of 1024px
-if(window.matchMedia('(min-width: 1024px)').matches) {
-    // Observer to hide buttons when necessary
-    const storiesObserver = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => {
-            if(entry.target === document.querySelector('.story:first-child')) {
-                storiesLeftButton.style.display = (entry.isIntersecting) ? 'none' : 'unset';
-            }
-            else if(entry.target === document.querySelector('.story:last-child')) {
-                storiesRightButton.style.display = (entry.isIntersecting) ? 'none' : 'unset';
-            }
-        });
-    }, { root: storiesContent, threshold: 1 });
+if(window.matchMedia('(min-width: 1024px)').matches && storiesContent) {
+    const firstStory = document.querySelector('.story:first-child');
+    const lastStory = document.querySelector('.story:last-child');
+    if (firstStory && lastStory && storiesLeftButton && storiesRightButton) {
+        // Observer to hide buttons when necessary
+        const storiesObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if(entry.target === firstStory) {
+                    storiesLeftButton.style.display = (entry.isIntersecting) ? 'none' : 'unset';
+                }
+                else if(entry.target === lastStory) {
+                    storiesRightButton.style.display = (entry.isIntersecting) ? 'none' : 'unset';
+                }
+            });
+        }, { root: storiesContent, threshold: 1 });
 
-    // Calling the observer with the first and last stories
-    storiesObserver.observe(document.querySelector('.story:first-child'));
-    storiesObserver.observe(document.querySelector('.story:last-child'));
+        // Calling the observer with the first and last stories
+        storiesObserver.observe(firstStory);
+        storiesObserver.observe(lastStory);
+    }
 }
 
 // ===================================
@@ -83,35 +93,42 @@ posts.forEach(post => {
             </svg>
         `;
 
-        post.querySelector('.post__content').appendChild(leftButtonElement);
-        post.querySelector('.post__content').appendChild(rightButtonElement);
+        const postContent = post.querySelector('.post__content');
+        if (postContent) {
+            postContent.appendChild(leftButtonElement);
+            postContent.appendChild(rightButtonElement);
+        }
 
         post.querySelectorAll('.post__media').forEach(function() {
             const postMediaIndicatorElement = document.createElement('div');
             postMediaIndicatorElement.classList.add('post__indicator');
-
-            post.querySelector('.post__indicators').appendChild(postMediaIndicatorElement);
+            const postIndicators = post.querySelector('.post__indicators');
+            if (postIndicators) {
+                postIndicators.appendChild(postMediaIndicatorElement);
+            }
         });
 
         // Observer to change the actual media indicator
         const postMediasContainer = post.querySelector('.post__medias');
         const postMediaIndicators = post.querySelectorAll('.post__indicator');
-        const postIndicatorObserver = new IntersectionObserver(function(entries) {
-            entries.forEach(entry => {
-                if(entry.isIntersecting) {
-                    // Removing all the indicators
-                    postMediaIndicators.forEach(indicator => indicator.classList.remove('post__indicator--active'));
-                    // Adding the indicator that matches the current post media
-                    postMediaIndicators[Array.from(postMedias).indexOf(entry.target)].classList.add('post__indicator--active');
-                }
-            });
-        }, { root: postMediasContainer, threshold: 0.5 });
+        if (postMediasContainer && postMediaIndicators.length) {
+            const postIndicatorObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if(entry.isIntersecting) {
+                        // Removing all the indicators
+                        postMediaIndicators.forEach(indicator => indicator.classList.remove('post__indicator--active'));
+                        // Adding the indicator that matches the current post media
+                        postMediaIndicators[Array.from(postMedias).indexOf(entry.target)].classList.add('post__indicator--active');
+                    }
+                });
+            }, { root: postMediasContainer, threshold: 0.5 });
 
-        // Calling the observer for every post media
-        const postMedias = post.querySelectorAll('.post__media');
-        postMedias.forEach(media => {
-            postIndicatorObserver.observe(media);
-        });
+            // Calling the observer for every post media
+            const postMedias = post.querySelectorAll('.post__media');
+            postMedias.forEach(media => {
+                postIndicatorObserver.observe(media);
+            });
+        }
     }
 });
 
@@ -122,29 +139,34 @@ postsContent.forEach(post => {
         const rightButton = post.querySelector('.post__right-button');
         const postMediasContainer = post.querySelector('.post__medias');
 
-        // Functions for left and right buttons
-        leftButton.addEventListener('click', () => {
-            postMediasContainer.scrollLeft -= 400;
-        });
-        rightButton.addEventListener('click', () => {
-            postMediasContainer.scrollLeft += 400;
-        });
+        if (leftButton && postMediasContainer) {
+            leftButton.addEventListener('click', () => {
+                postMediasContainer.scrollLeft -= 400;
+            });
+        }
+        if (rightButton && postMediasContainer) {
+            rightButton.addEventListener('click', () => {
+                postMediasContainer.scrollLeft += 400;
+            });
+        }
 
         // Observer to hide button if necessary
         const postButtonObserver = new IntersectionObserver(function(entries) {
             entries.forEach(entry => {
                 if(entry.target === post.querySelector('.post__media:first-child')) {
-                    leftButton.style.display = (entry.isIntersecting) ? 'none' : 'unset';
+                    if (leftButton) leftButton.style.display = (entry.isIntersecting) ? 'none' : 'unset';
                 }
                 else if(entry.target === post.querySelector('.post__media:last-child')) {
-                    rightButton.style.display = (entry.isIntersecting) ? 'none' : 'unset';
+                    if (rightButton) rightButton.style.display = (entry.isIntersecting) ? 'none' : 'unset';
                 }
             });
         }, { root: postMediasContainer, threshold: 0.5 });
 
-        if(window.matchMedia('(min-width: 1024px)').matches) {
-            postButtonObserver.observe(post.querySelector('.post__media:first-child'));
-            postButtonObserver.observe(post.querySelector('.post__media:last-child'));
+        if(window.matchMedia('(min-width: 1024px)').matches && postMediasContainer) {
+            const firstMedia = post.querySelector('.post__media:first-child');
+            const lastMedia = post.querySelector('.post__media:last-child');
+            if (firstMedia) postButtonObserver.observe(firstMedia);
+            if (lastMedia) postButtonObserver.observe(lastMedia);
         }
     }
 });

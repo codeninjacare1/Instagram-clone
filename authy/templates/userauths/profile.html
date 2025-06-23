@@ -50,12 +50,12 @@ Page content START -->
 			<div class="col-lg-8">
 			
 				<!-- Title -->
-                {% if profile.first_name  %}
+                {% if profile.first_name or profile.last_name %}
 					<h5 class="mb-0">Hi, I am</h5>
                 {% else %}
 					<h5 class="mb-0">Hi, {{request.user|title}}, you need to <a href="{% url 'userauths:profile-update' %}" style="color: rgb(0, 119, 255);">update </a> your profile for more features and details</h5>
                 {% endif %}
-				<h1 class="mb-0">{{ profile.first_name }} {{ profile.last_name }}</h1>
+				<h1 class="mb-0">{% if profile.first_name or profile.last_name %}{{ profile.first_name }} {{ profile.last_name }}{% else %}@{{ profile.user.username }}{% endif %}</h1>
 				<p>{{ profile.bio }}</p>
 				<!-- Content -->
 				<p class="mt-4">{{ profile.aboutme }}</p>

@@ -89,50 +89,40 @@
 							</div>
 						</div>
 					</div>
-					{% if messages %}
-					{% for message in messages %}
-					<a href="{% url 'directs' message.user.username %}" class="list-group-item list-group-item-action border-0 {% if active_direct == message.user.username %}active{% endif %}">
-						<div class="badge bg-success float-right"></div>
+					{% if sidebar_users %}
+					{% for p in sidebar_users %}
+					<a href="{% url 'directs' p.user.username %}" class="list-group-item list-group-item-action border-0 {% if active_direct == p.user.username %}active{% endif %}">
 						<div class="d-flex align-items-start pb-2">
 							<div style="position: relative; display: inline-block;">
-								<img src="{{ message.user.profile.image.url }}" class="rounded-circle mr-1" alt="img" width="40" height="40">
-								{% if message.user.profile.is_online %}
+								<img src="{{ p.image.url }}" class="rounded-circle mr-1" alt="img" width="40" height="40">
+								{% if p.is_online %}
 									<span class="online-status online" title="Online"></span>
 								{% else %}
 									<span class="online-status" title="Offline"></span>
 								{% endif %}
 							</div>
 							<div class="flex-grow-1 ml-6">
-								<b>{{message.user.profile.first_name}} {{message.user.profile.last_name}}</b>
+								<b>
+									{% if p.first_name or p.last_name %}
+										{{p.first_name}} {{p.last_name}}
+									{% else %}
+										@{{p.user.username}}
+									{% endif %}
+								</b>
 								<div class="small">
-									@{{message.user.username}}<br>
-									{% if message.user.profile.is_online %}
+									@{{p.user.username}}<br>
+									{% if p.is_online %}
 										Online
 									{% else %}
-										Last seen: {{ message.user.profile.last_active|date:"d M, H:i A" }}
+										Last seen: {{ p.last_active|date:"d M, H:i A" }}
 									{% endif %}
-									
 								</div>
 							</div>
 						</div>
 					</a>
 					{% endfor %}
 					{% else %}
-						{% for p in combined_users %}
-						<a href="{% url 'new-conversation' p.user.username %}" class="list-group-item list-group-item-action border-0">
-							<div class="d-flex align-items-start pb-2">
-								<div style="position: relative; display: inline-block;">
-									<img src="{{ p.image.url }}" class="rounded-circle mr-1" alt="img" width="40" height="40">
-								</div>
-								<div class="flex-grow-1 ml-6">
-									<b>{{p.first_name}} {{p.last_name}}</b>
-									<div class="small">
-										@{{p.user.username}}<br>
-									</div>
-								</div>
-							</div>
-						</a>
-						{% endfor %}
+						<p class="p-4 text-center">You have no followers or following users.</p>
 					{% endif %}
 
 					<hr class="d-block d-lg-none mt-1 mb-0">

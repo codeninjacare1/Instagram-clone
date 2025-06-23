@@ -42,7 +42,11 @@
                                 {% endif %}
                             </a>
                             <div class="side-menu__user-idnfo" style="text-align: start;">
-                                <a href="{% url 'profile' notification.sender.username %}" style="font-size: 15px; color: black; text-align: center;">{{ notification.sender.profile.first_name|title }} {{ notification.sender.profile.last_name|title }}</a> <br>
+                                <a href="{% url 'profile' notification.sender.username %}" style="font-size: 15px; color: black; text-align: center;">{% if notification.sender.profile.first_name or notification.sender.profile.last_name %}
+                                    {{ notification.sender.profile.first_name|title }} {{ notification.sender.profile.last_name|title }}
+                                {% else %}
+                                    @{{ notification.sender.username }}
+                                {% endif %}</a> <br>
                                 <a href="{% url 'post-details' notification.post.id %}" style="font-size: 15px; color: black; text-align: center;"><b><i class="bi bi-hand-thumbs-up-fill" style="color: blue;"></i> Liked your post</b></a> <br>
                                 <a href="{% url 'post-details' notification.post.id %}" style="font-size: 10px; color: rgb(75, 75, 75); ">{{ notification.date }}</a>
 
@@ -66,7 +70,11 @@
                                 {% endif %}
                             </a>
                             <div class="side-menu__user-idnfo" style="text-align: start;">
-                                <a href="{% url 'profile' notification.sender.username %}" style="font-size: 15px; color: black; text-align: center;">{{ notification.sender.profile.first_name|title }} {{ notification.sender.profile.last_name|title }}</a> <br>
+                                <a href="{% url 'profile' notification.sender.username %}" style="font-size: 15px; color: black; text-align: center;">{% if notification.sender.profile.first_name or notification.sender.profile.last_name %}
+                                    {{ notification.sender.profile.first_name|title }} {{ notification.sender.profile.last_name|title }}
+                                {% else %}
+                                    @{{ notification.sender.username }}
+                                {% endif %}</a> <br>
                                 <a href="{% url 'profile' notification.sender.username %}" style="font-size: 15px; color: black; text-align: center;"><b><i class="bi bi-person-plus-fill" style="color: green;"></i> Started following you</b></a> <br>
                                 <a href="{% url 'profile' notification.sender.username %}" style="font-size: 10px; color: rgb(75, 75, 75); ">{{ notification.date }}</a>
                             </div>
@@ -89,7 +97,11 @@
                     </a>
                      
                       <div class="side-menu__user-idnfo" style="text-align: start;">
-                        <a href="{% url 'profile' notification.sender.username %}" style="font-size: 15px; color: black; text-align: center;">{{ notification.sender.profile.first_name|title }} {{ notification.sender.profile.last_name|title }}</a> <br>
+                        <a href="{% url 'profile' notification.sender.username %}" style="font-size: 15px; color: black; text-align: center;">{% if notification.sender.profile.first_name or notification.sender.profile.last_name %}
+                            {{ notification.sender.profile.first_name|title }} {{ notification.sender.profile.last_name|title }}
+                        {% else %}
+                            @{{ notification.sender.username }}
+                        {% endif %}</a> <br>
                         <a href="{% url 'post-details' notification.post.id %}" style="font-size: 15px; color: black; text-align: center;"><b><i class="bi bi-chat-dots-fill" style="color: rgb(252, 122, 1);"></i> Commented: {{ notification.text_preview }}</b></a> <br>
                         <a href="{% url 'post-details' notification.post.id %}" style="font-size: 10px; color: rgb(75, 75, 75); ">{{ notification.date }}</a>
                       </div>
