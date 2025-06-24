@@ -80,7 +80,7 @@
 
 		<div class="card">
 			<div class="row g-0">
-				<div class="col-12 col-lg-12 col-xl-3 border-right chat-messages" >
+				<div class="col-12 col-lg-12 col-xl-3 border-right" >
 
 					<div class="px-4 d-none d-md-block">
 						<div class="d-flex align-items-center">
@@ -146,7 +146,7 @@
 					</div>
 
 					<div class="position-relative">
-						<div class="chat-messages p-4">
+						<div id="chat-messages-container" class="chat-messages p-4">
 
 									{% for direct in directs %}
 										{% if direct.sender == request.user %}
@@ -185,10 +185,10 @@
 							{% if blocked %}
 								<div class="alert alert-danger mb-0">You cannot send messages to this user.</div>
 							{% else %}
-								<form method="POST" action="{% url 'send-directs' %}">
+								<form id="chat-form">
 									{% csrf_token %}
 									<div class="input-group">
-										<input type="hidden" name="to_user" id="" value="{{active_direct}}">
+										<input type="hidden" name="to_user" value="{{active_direct}}">
 										<input name="body" type="text" class="form-control" placeholder="Type your message" required>
 										<button class="btn btn-primary" type="submit">Send</button>
 									</div>
@@ -201,7 +201,91 @@
 		</div>
 	</div>
 </main>
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+
+	<script>
+		// Use the shared room name provided by the view
+		const roomName = "{{ room_name }}"; 
+		const username = "{{ request.user.username }}";
+		const profileImage = "{{ request.user.profile.image.url }}";
+		const chatContainer = document.getElementById('chat-messages-container');
+
+		// Function to append a new message to the chat container
+		function appendMessage(data) {
+			if (!chatContainer) return;
+
+			const messageDiv = document.createElement('div');
+			let messageClass = 'chat-message-left pb-2';
+			// The sender's image should come from the message data itself for incoming messages
+			let senderImage = data.profile_image; 
+
+			if (data.username === username) {
+				messageClass = 'chat-message-right pb-2';
+				senderImage = profileImage; // Use the current user's profile image for their own messages
+			}
+
+			messageDiv.className = messageClass;
+			messageDiv.innerHTML = `
+				<div>
+					<img src="${senderImage}" class="rounded-circle mr-1" width="40" height="40">
+				</div>
+				<div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3">
+					${data.message}
+				</div>
+			`;
+			chatContainer.appendChild(messageDiv);
+			chatContainer.scrollTop = chatContainer.scrollHeight;
+		}
+
+		// WebSocket setup
+		if (roomName) {
+			const chatSocket = new WebSocket(
+				(window.location.protocol === 'https:' ? 'wss://' : 'ws://') + 
+				window.location.host + 
+				'/ws/chat/' + 
+				roomName + 
+				'/'
+			);
+
+			chatSocket.onmessage = function(e) {
+				const data = JSON.parse(e.data);
+				appendMessage(data);
+			};
+
+			const chatForm = document.getElementById('chat-form');
+			if (chatForm) {
+				chatForm.onsubmit = function(e) {
+					e.preventDefault();
+					const input = chatForm.querySelector('input[name="body"]');
+					const message = input.value;
+					if (message.trim() === '') return false;
+
+					if (chatSocket.readyState === WebSocket.OPEN) {
+						chatSocket.send(JSON.stringify({
+							'message': message,
+							'username': username,
+							'profile_image': profileImage 
+						}));
+					} else {
+						console.error('WebSocket is not open. readyState: ' + chatSocket.readyState);
+					}
+
+					input.value = '';
+					return false;
+				};
+			}
+		} else {
+			console.error("Chat room name ('room_name') is missing. WebSocket connection not established.");
+		}
+
+		// Auto-scroll to the bottom on page load
+		document.addEventListener("DOMContentLoaded", function() {
+			if (chatContainer) {
+				chatContainer.scrollTop = chatContainer.scrollHeight;
+			}
+		});
+	</script>
+
 </html>
 {% endblock content %}

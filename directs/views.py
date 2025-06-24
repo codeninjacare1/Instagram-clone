@@ -7,78 +7,57 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 
 @login_required
-def inbox(request):
+def Directs(request, username=None):
     user = request.user
-    messages = Message.get_message(user=request.user)
-    active_direct = None
-    directs = None
-    profile = get_object_or_404(Profile, user=user)
-    
-    # Get the list of users the current user is following
-    following_profiles = user.profile.following.all()
-    
-    # Get the list of users who follow the current user
-    follower_profiles = user.profile.followers.all()
-
-    # Combine both lists and remove duplicates
-    combined_profiles = set(list(following_profiles) + list(follower_profiles))
-    # Remove self if present
-    combined_profiles.discard(user.profile)
-
-    # Users with whom there is already a message
-    messaged_users = set([msg['user'].profile for msg in messages]) if messages else set()
-
-    # Sidebar users: all followers/following, but message users at the top (no duplicates)
-    sidebar_users = list(messaged_users) + [p for p in combined_profiles if p not in messaged_users]
-
-    # --- DEBUG PRINT ---
-    print('Sidebar users:', [p.user.username for p in sidebar_users])
-
-    if messages:
-        message = messages[0]
-        active_direct = message['user'].username
-        directs = Message.objects.filter(user=request.user, reciepient=message['user'])
-        directs.update(is_read=True)
-
-        for message in messages:
-            if message['user'].username == active_direct:
-                message['unread'] = 0
-    context = {
-        'directs':directs,
-        'messages': messages,
-        'active_direct': active_direct,
-        'profile': profile,
-        'sidebar_users': sidebar_users,
-    }
-    return render(request, 'directs/direct.html', context)
-
-
-@login_required
-def Directs(request, username):
-    user  = request.user
     messages = Message.get_message(user=user)
+
+    # If no username is provided, redirect to the latest chat or show an empty inbox
+    if username is None:
+        if messages:
+            latest_chat_username = messages[0]['user'].username
+            return redirect('directs', username=latest_chat_username)
+        else:
+            # No messages yet, show an empty inbox page but with the sidebar
+            following_profiles = user.profile.following.all()
+            follower_profiles = user.profile.followers.all()
+            sidebar_profiles = list(set(list(following_profiles) + list(follower_profiles)))
+            context = {'sidebar_users': sidebar_profiles}
+            return render(request, 'directs/direct.html', context)
+
+    # If a username is provided, proceed to show the conversation
     active_direct = username
-    directs = Message.objects.filter(user=user, reciepient__username=username)  
-    directs.update(is_read=True)
-
-    # Blocked logic
     to_user = User.objects.get(username=username)
-    user_profile = user.profile
-    to_user_profile = to_user.profile
-    blocked = (to_user_profile in user_profile.blocked_users.all()) or (user_profile in to_user_profile.blocked_users.all())
 
+    # Create a consistent, shared room name for the WebSocket connection
+    usernames = sorted([user.username, to_user.username])
+    room_name_for_ws = f"{usernames[0]}_{usernames[1]}"
+
+    # Fetch the full conversation history
+    directs = Message.objects.filter(user=user).filter(
+        Q(sender=to_user) | Q(reciepient=to_user)
+    ).order_by('date')
+    
+    # Mark messages in this thread as read
+    Message.objects.filter(user=user, reciepient=to_user, is_read=False).update(is_read=True)
+
+    # Update unread count for the sidebar
     for message in messages:
         if message['user'].username == username:
             message['unread'] = 0
 
-    # --- Add sidebar_users logic here ---
+    # Sidebar users logic
     following_profiles = user.profile.following.all()
     follower_profiles = user.profile.followers.all()
     combined_profiles = set(list(following_profiles) + list(follower_profiles))
-    combined_profiles.discard(user.profile)
-    messaged_users = set([msg['user'].profile for msg in messages]) if messages else set()
+    if user.profile in combined_profiles:
+        combined_profiles.remove(user.profile)
+    messaged_users = {msg['user'].profile for msg in messages} if messages else set()
     sidebar_users = list(messaged_users) + [p for p in combined_profiles if p not in messaged_users]
-    # --- End sidebar_users logic ---
+
+    # Blocked logic
+    user_profile = user.profile
+    to_user_profile = to_user.profile
+    blocked = (to_user_profile in user_profile.blocked_users.all()) or (user_profile in to_user_profile.blocked_users.all())
 
     context = {
         'directs': directs,
@@ -86,6 +65,7 @@ def Directs(request, username):
         'active_direct': active_direct,
         'blocked': blocked,
         'sidebar_users': sidebar_users,
+        'room_name': room_name_for_ws
     }
     return render(request, 'directs/direct.html', context)
 

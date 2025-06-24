@@ -27,6 +27,7 @@ ALLOWED_HOSTS = ['instagram-clone-ooar.onrender.com', 'localhost', '127.0.0.1', 
 
 # Application definition
 INSTALLED_APPS = [
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -83,7 +84,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Django_Instagram.wsgi.application'
-
+ASGI_APPLICATION = 'Django_Instagram.asgi.application'
 # Database
 DATABASES = {
     'default': dj_database_url.config(
@@ -188,4 +189,8 @@ CRON_CLASSES = [
     'cron.DeleteExpiredStoriesCronJob',
 ]
 
- 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
