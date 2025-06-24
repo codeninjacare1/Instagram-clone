@@ -53,4 +53,25 @@ services:
 
 
 buildCommand: "./build.sh"
-startCommand: "gunicorn Django_Instagram.wsgi:application"
+startCommand: "daphne -b 0.0.0.0 -p $PORT Django_Instagram.asgi:application"
+
+databases:
+  - name: instagram-clone-db
+    databaseName: instagram_clone_db
+    user: instagram_clone_user
+
+services:
+  - type: web
+    name: instagram-clone
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "daphne -b 0.0.0.0 -p $PORT Django_Instagram.asgi:application"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: instagram-clone-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4
